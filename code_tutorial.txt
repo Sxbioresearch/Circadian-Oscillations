@@ -1,0 +1,21 @@
+1. Sampling Time Affects the Biomass and Composition of the Oropharyngeal Microbiome:
+(1) The file Fig1_paint.Rmd contains the code for generating the results presented in Figure 1 of the manuscript. The related data file is stored in Fig1_data.RData.
+
+2. Circadian Rhythm of the Oropharyngeal Microbiome:
+(1) The file Detect_rhythm_Circacompare.R includes the procedure for generating the simulated dataset and using the Circacompare method to detect microbial rhythmicity. The Circacompare method is implemented in R, and the absolute abundance table of microbial species for the real sequencing dataset (OP_species_absolute_filter.csv) is provided in the data folder.
+(2) The file Detect_rhythm_eJTK.sh demonstrates how to use the empJTK method for rhythm detection. empJTK is run on a Linux system, and installation details can be found here: https://github.com/alanlhutchison/empirical-JTK_CYCLE-with-asymmetry
+(3) The file cluster_analysis.R provides the procedure for clustering rhythmic species' oscillation patterns using the Mfuzz package in R. The rhythm detection results are stored in the file OP_rhythm_data.csv, which is located in the data folder.
+(4) The file Fig2_paint.Rmd contains the code for generating the results presented in Figure 2 of the manuscript. The related data file is stored in Fig2_data.RData.
+
+3. Microbiome Temporal Oscillations Introduce False-Positive Differential Taxa:
+(1) The file Fig3_paint.Rmd contains the code for generating the results presented in Figure 3 of the manuscript. The related data file is stored in Fig3_data.RData.
+
+4. Microbial Rhythmic Patterns are Associated with Intrinsic Phenotypic Traits:
+(1) The file traitar.sh explains how to use the traitar software to predict microbial phenotypes. Phenotype prediction is performed on a Linux system, and installation details can be found here: https://github.com/hzi-bifo/traitar
+(2) The file Fig4_paint.Rmd contains the code for generating the results presented in Figure 4 of the manuscript. The related data file is stored in Fig4_data.RData.
+
+5. Circadian Rhythmicity of Oropharyngeal Microbial Pathways Emerges from Diverse Rhythmic Species:
+(1) The file Fig5_paint.Rmd contains the code for generating the results presented in Figure 5 of the manuscript. The related data file is stored in Fig5_data.RData.
+
+6. Differential Rhythmicity of the Microbiome Between the Oropharynx and Oral Cavity:
+(1) The file Fig6_paint.Rmd contains the code for generating the results presented in Figure 6 of the manuscript. The related data file is stored in Fig6_data.RData.
