@@ -1,0 +1,620 @@
+---
+title: "Fig3_paint"
+output: html_document
+date: "2025-12-04"
+---
+
+```{r setup, include=FALSE}
+path <- 'F:/C/OP_analysis/Fig_paint/Fig3'
+knitr::opts_chunk$set(echo = TRUE,
+                      tidy=TRUE,
+                      error = T)
+knitr::opts_knit$set(root.dir= path)
+```
+
+```{r}
+###Fig3A
+BC_distance <- read.table("OP_BC_filter2.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+data <- BC_distance
+###9：00 
+data9 <- data[data$TimeA == 9 | data$TimeB == 9, ]
+###T+I+
+datanew <- subset(data9,PeopleA==PeopleB) 
+data1 <- subset(datanew,TimeA==TimeB) 
+for (i in 1:nrow(data1)){
+    data1[i,8]="ST"
+}
+names(data1)[8]  <- "group"
+##T-I+(max)
+data2 <- subset(datanew,TimeA!=TimeB)
+data2_1 <- subset(data2,DateA == DateB)
+data2_new <- data2_1 %>%
+  group_by(PeopleA) %>%
+  slice_max(value)
+data2 <- data2_new
+for (i in 1:nrow(data2)){
+    data2[i,8]="DT"
+}
+names(data2)[8]  <- "group"
+###T+I-
+datanew2 <- subset(data9,PeopleA != PeopleB) 
+datanew2 <- subset(datanew2,DateA == DateB) 
+datanew2 <- subset(datanew2,TimeA == TimeB)
+data3 <- datanew2
+for (i in 1:nrow(data3)){
+    data3[i,8]="DP"
+}
+names(data3)[8]  <- "group"
+all1 <- rbind(data1,data2,data3)
+
+###13：00
+data13 <- data[data$TimeA == 13 | data$TimeB == 13, ]
+###T+I+
+datanew <- subset(data13,PeopleA==PeopleB) 
+data1 <- subset(datanew,TimeA==TimeB) 
+for (i in 1:nrow(data1)){
+    data1[i,8]="ST"
+}
+names(data1)[8]  <- "group"
+##T-I+(max)
+data2 <- subset(datanew,TimeA!=TimeB)
+data2_1 <- subset(data2,DateA == DateB)
+data2_new <- data2_1 %>%
+  group_by(PeopleA) %>%
+  slice_max(value)
+data2 <- data2_new
+for (i in 1:nrow(data2)){
+    data2[i,8]="DT"
+}
+names(data2)[8]  <- "group"
+###T+I-
+datanew2 <- subset(data13,PeopleA != PeopleB) 
+datanew2 <- subset(datanew2,DateA == DateB) 
+datanew2 <- subset(datanew2,TimeA == TimeB)
+data3 <- datanew2
+for (i in 1:nrow(data3)){
+    data3[i,8]="DP"
+}
+names(data3)[8]  <- "group"
+all2 <- rbind(data1,data2,data3)
+
+###17：00
+data17 <- data[data$TimeA == 17 | data$TimeB == 17, ]
+###T+I+
+datanew <- subset(data17,PeopleA==PeopleB) 
+data1 <- subset(datanew,TimeA==TimeB) 
+for (i in 1:nrow(data1)){
+    data1[i,8]="ST"
+}
+names(data1)[8]  <- "group"
+##T-I+(max)
+data2 <- subset(datanew,TimeA!=TimeB)
+data2_1 <- subset(data2,DateA == DateB)
+data2_new <- data2_1 %>%
+  group_by(PeopleA) %>%
+  slice_max(value)
+data2 <- data2_new
+for (i in 1:nrow(data2)){
+    data2[i,8]="DT"
+}
+names(data2)[8]  <- "group"
+###T+I-
+datanew2 <- subset(data17,PeopleA != PeopleB) 
+datanew2 <- subset(datanew2,DateA == DateB) 
+datanew2 <- subset(datanew2,TimeA == TimeB)
+data3 <- datanew2
+for (i in 1:nrow(data3)){
+    data3[i,8]="DP"
+}
+names(data3)[8]  <- "group"
+all3 <- rbind(data1,data2,data3)
+
+###21：00
+data21 <- data[data$TimeA == 21 | data$TimeB == 21, ]
+###T+I+
+datanew <- subset(data21,PeopleA==PeopleB) 
+data1 <- subset(datanew,TimeA==TimeB) 
+for (i in 1:nrow(data1)){
+    data1[i,8]="ST"
+}
+names(data1)[8]  <- "group"
+##T-I+(max)
+data2 <- subset(datanew,TimeA!=TimeB)
+data2_1 <- subset(data2,DateA == DateB)
+data2_new <- data2_1 %>%
+  group_by(PeopleA) %>%
+  slice_max(value)
+data2 <- data2_new
+for (i in 1:nrow(data2)){
+    data2[i,8]="DT"
+}
+names(data2)[8]  <- "group"
+###T+I-
+datanew2 <- subset(data21,PeopleA != PeopleB) 
+datanew2 <- subset(datanew2,DateA == DateB) 
+datanew2 <- subset(datanew2,TimeA == TimeB)
+data3 <- datanew2
+for (i in 1:nrow(data3)){
+    data3[i,8]="DP"
+}
+names(data3)[8]  <- "group"
+all4 <- rbind(data1,data2,data3)
+
+for (i in 1:nrow(all1)){
+    all1[i,9]="9:00"
+}
+names(all1)[9]  <- "type"
+for (i in 1:nrow(all2)){
+    all2[i,9]="13:00"
+}
+names(all2)[9]  <- "type"
+for (i in 1:nrow(all3)){
+    all3[i,9]="17:00"
+}
+names(all3)[9]  <- "type"
+for (i in 1:nrow(all4)){
+    all4[i,9]="21:00"
+}
+names(all4)[9]  <- "type"
+all_merge <- rbind(all1,all2,all3,all4)
+my_comparisons <- list( c("ST","DT"),c("ST","DP"),c("DT","DP"))
+all_merge$type <- factor(all_merge$type,levels = c("9:00","13:00","17:00","21:00"))
+ggplot(data=all_merge, aes(x=reorder(group,value , FUN = median), y = value,color= group)) +
+  geom_boxplot(width = 0.2) +
+#  geom_jitter(aes(fill=group),width =0.1,shape = 21,size=2)+
+  stat_boxplot(geom = "errorbar",width=0.2)+
+  geom_point(aes(color=group),size=0.1) + 
+ # geom_line(aes(group = PeopleA), color = 'gray', lwd = 0.3) +  #绘制配对样本间连线
+ # stat_compare_means(aes(group = type))+
+  #scale_color_jco()+
+  #scale_fill_npg()+
+  scale_color_manual(values = c(DT="#5B8FA8",ST="#D49464",DP="#ADB17D"))+
+  #scale_fill_manual(values = c("#CD534CFF","#7AA6DCFF"))+
+  #stat_compare_means(method = "wilcox.test")+
+  stat_compare_means(comparisons = my_comparisons,method = "wilcox.test",label = "p.signif")+ 
+  facet_wrap(~type,nrow = 2)+
+  theme_bw()+
+ # theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+   theme(
+  #  axis.line = element_line(colour = "black", size = 1),  # 设置轴线
+    panel.grid.major = element_blank(),  # 隐藏网格线
+    panel.grid.minor = element_blank()
+  )+
+  coord_fixed(ratio = 6) +
+  ylab("Bray_Curtis")+xlab("group")+
+  theme(aspect.ratio = 1.5)
+p <- c(2.6e-09,5.8e-08,8.7e-07,0.00037,0.0031,0.0005,0.00019,0.00037,0.026,5.1e-06,7.2e-06,0.081)
+q <- p.adjust(p,method = "BH")
+##0.0000000312 0.0000003480 0.0000034800 
+#0.0005550000 0.0037200000 0.0006666667 
+#0.0003800000 0.0005550000 0.0283636364 
+#0.0000153000 0.0000172800 0.0810000000
+```
+
+```{r}
+##Fig3B 
+####The number of differentially species at each time point
+OP_diff_absolute <- read.table("ZicoSeq_diff_absolute_fdr_day1.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+OP_diff_absolute$abs_log2FC <- abs(OP_diff_absolute$Foldchange)
+####select p_BH < 0.05 
+OP_diff_absolute_new <- OP_diff_absolute[OP_diff_absolute$p.adj.fdr < 0.05, ]
+time_diff_number <- as.data.frame(table(OP_diff_absolute_new$type))
+time_diff_number$log <- log(time_diff_number$Freq)
+time_diff_number$log10 <- log10(time_diff_number$Freq)
+library(ggplot2)
+ggplot(time_diff_number, aes(x = reorder(Var1, Freq), y =Freq))+
+  geom_bar(stat = "identity",alpha=0.9)+
+  geom_text(aes(label = Freq), vjust = -0.3, color = "black")+
+#  coord_flip()+
+ # theme(angle = 180)+
+  theme_bw()+
+  ylab("log2(diff_number)")+
+  theme(panel.grid = element_blank())+
+   theme(
+    axis.line = element_line(colour = "black", size = 1), 
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 1)
+
+####Volcano plot
+ZicoSeq_absolute_all_new <-  read.table("ZicoSeq_all_absolute_fdr_day1.csv",header = T,sep = ",",stringsAsFactors = FALSE,fill = TRUE)
+ZicoSeq_absolute_all_new$log10P <- log10(ZicoSeq_absolute_all_new$p.adj.fdr)
+ZicoSeq_absolute_all_new$group <- "1"
+ZicoSeq_absolute_all_new$group[ZicoSeq_absolute_all_new$p.adj.fdr < 0.05] <- "target"
+ZicoSeq_absolute_all_new$group[ZicoSeq_absolute_all_new$p.adj.fdr >= 0.05] <- "other"
+names(ZicoSeq_absolute_all_new) <- c("taxa","p.adj.fdr","R2","log2FC","type","log10P","group")
+library(ggrepel)
+ggplot(ZicoSeq_absolute_all_new,aes(log2FC, -log10P
+                                       #  size=number,
+                                     #    shape=group,
+                                       # alpha=group
+                                      ))+
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#999999")+
+  geom_vline(xintercept = c(-1,1), linetype = "dashed", color = "#999999")+
+ # geom_vline(xintercept = c(-4,4), linetype = "dashed", color = "#999999")+
+  geom_point(aes(color = type)) +
+  scale_alpha_manual(values = c("target" = 1, "other" = 0.4)) +
+ scale_size_continuous(range = c(1, 2))+
+  #scale_x_continuous(
+  #  limits = c(-8, 8),
+ #   breaks = seq(-8, 8, by = 2)
+ # ) +
+#  ylim(0, 3) +
+  theme_bw(base_size = 12)+
+  ggsci::scale_color_igv() +
+  theme(panel.grid = element_blank(),
+        legend.position = 'right') +
+  # 添加标签：
+#  geom_text_repel(data = filter(ZicoSeq_absolute_all_new, abs(log2FC) > 1 & -log10P > 1),
+    #              max.overlaps = getOption("ggrepel.max.overlaps", default = 20),
+             #     aes(label = taxa),
+               #   size = 2,color="red") +
+ # geom_text_repel(
+#    data = subset(ZicoSeq_diff_absolute_all_new, abs(Foldchange) > 5 & -log10P > 1& number <3),
+  #  max.overlaps = getOption("ggrepel.max.overlaps", default = 20),
+ #   aes(label = taxa),
+ #   size = 2,color="black"
+ # )+
+  xlab("Log2FC")+
+  ylab("-Log10(p.adj.fdr)")+
+  theme(aspect.ratio = 1)
+
+```
+
+```{r}
+####Fig3C
+###target species
+FC_use <- read.table("ZicoSeq_diff_absolute_number_day1.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+FC_use <- FC_use[FC_use$number == 3,]
+FC_target <- FC_use$taxa
+
+df <-  read.table("OP_merge_species_filter.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+library(dplyr)
+library(stringr)
+df <- df %>% rename_with(~ str_replace_all(., c(
+  "210705_17" = "day1_17",
+  "210705_21" = "day1_21",
+  "210706_09" = "day1_09",
+  "210706_13" = "day1_13",
+  "210706_17" = "day2_17",
+  "210706_21" = "day2_21",
+  "210707_09" = "day2_09",
+  "210707_13" = "day2_13"
+)))
+# 提取分组标签（列名中第一个下划线后的部分）
+group_tags <- sub("^[^_]+_", "", colnames(df))
+# 按分组标签计算行均值
+result <- sapply(unique(group_tags), function(tag) {
+  cols <- which(group_tags == tag)
+  rowMeans(df[, cols, drop = FALSE])
+})
+# 转换为数据框
+result_df <- as.data.frame(result)
+
+paint <- result_df[FC_target,]
+paint <- paint[rownames(paint) != "bacterium", ]
+paint <- paint[rownames(paint) != "uncultured.bacterium", ]
+order <- c("day1_09","day1_13","day1_17","day1_21","day2_09","day2_13","day2_17","day2_21")
+paint1 <- paint[,order]
+#heatmap
+library(pheatmap)
+pheatmap(paint1, 
+         scale = "row", #scale
+         cluster_cols = F,
+         color = colorRampPalette(c("#053061", "#2166AC", "#4393C3", "#92C5DE","#D1E5F0","#FFFFFF","#FDDBC7","#F4A582","#D6604D", "#B2182B","#67001F"))(100))
+
+
+```
+
+
+```{r}
+###Difference analysis
+OP_group <- read.table("OP_group2_day1.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+OP_species_absolute <- read.table("OP_merge_species_filter.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+target <- OP_group$SampleID
+OP_species_absolute_day1 <- OP_species_absolute[,target]
+
+###9:00 vs 13:00
+select1 <- grep("_09$|_13$", colnames(OP_species_absolute_day1), value = TRUE)
+input1 <- OP_species_absolute_day1[, select1, drop = FALSE]
+meta1 <- OP_group[OP_group$SampleID %in% select1,] 
+library(GUniFrac)
+ZicoSeq1 <- ZicoSeq(meta.dat = meta1, feature.dat = as.matrix(input1), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE, outlier.pct=0.01,winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta1$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an1 <- as.data.frame(colnames(input1))
+names(Fd_an1) <- "ID"
+Fd_an1$ID <- sub(".+_", "", Fd_an1$ID)
+Fd_an1 <- Fd_an1$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="09");#0 tumer
+  sampleIdsControl<-which(classLabel=="13");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r1 <- as.data.frame(foldChange(input1,Fd_an1))
+ZicoSeq1_p <- as.data.frame(ZicoSeq1$p.adj.fdr)
+ZicoSeq1_p$R2 <- ZicoSeq1$R2
+ZicoSeq1_p$Foldchange <- Fd_r1$`foldChange(input1, Fd_an1)`
+ZicoSeq1_p$type <- "9_13"
+names(ZicoSeq1_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq1_p <- tibble::rownames_to_column(ZicoSeq1_p, var = "taxa")
+rownames(ZicoSeq1_p) <- NULL
+###9:00 vs 17:00
+select2 <- grep("_09$|_17$", colnames(OP_species_absolute_day1), value = TRUE)
+input2 <- OP_species_absolute_day1[, select2, drop = FALSE]
+meta2 <- OP_group[OP_group$SampleID %in% select2,]
+ZicoSeq2 <- ZicoSeq(meta.dat = meta2, feature.dat = as.matrix(input2), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE, outlier.pct=0.01,winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta2$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an2 <- as.data.frame(colnames(input2))
+names(Fd_an2) <- "ID"
+Fd_an2$ID <- sub(".+_", "", Fd_an2$ID)
+Fd_an2 <- Fd_an2$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="09");#0 tumer
+  sampleIdsControl<-which(classLabel=="17");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r2 <- as.data.frame(foldChange(input2,Fd_an2))
+ZicoSeq2_p <- as.data.frame(ZicoSeq2$p.adj.fdr)
+ZicoSeq2_p$R2 <- ZicoSeq2$R2
+ZicoSeq2_p$Foldchange <- Fd_r2$`foldChange(input2, Fd_an2)`
+ZicoSeq2_p$type <- "9_17"
+names(ZicoSeq2_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq2_p <- tibble::rownames_to_column(ZicoSeq2_p, var = "taxa")
+rownames(ZicoSeq2_p) <- NULL
+###9:00 vs 21:00
+select3 <- grep("_09$|_21$", colnames(OP_species_absolute_day1), value = TRUE)
+input3 <- OP_species_absolute_day1[, select3, drop = FALSE]
+meta3 <- OP_group[OP_group$SampleID %in% select3,]
+ZicoSeq3 <- ZicoSeq(meta.dat = meta3, feature.dat = as.matrix(input3), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE, outlier.pct=0.01,winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta3$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an3 <- as.data.frame(colnames(input3))
+names(Fd_an3) <- "ID"
+Fd_an3$ID <- sub(".+_", "", Fd_an3$ID)
+Fd_an3 <- Fd_an3$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="09");#0 tumer
+  sampleIdsControl<-which(classLabel=="21");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r3 <- as.data.frame(foldChange(input3,Fd_an3))
+ZicoSeq3_p <- as.data.frame(ZicoSeq3$p.adj.fdr)
+ZicoSeq3_p$R2 <- ZicoSeq2$R2
+ZicoSeq3_p$Foldchange <- Fd_r3$`foldChange(input3, Fd_an3)`
+ZicoSeq3_p$type <- "9_21"
+names(ZicoSeq3_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq3_p <- tibble::rownames_to_column(ZicoSeq3_p, var = "taxa")
+rownames(ZicoSeq3_p) <- NULL
+###13:00 vs 17:00
+select4 <- grep("_13$|_17$", colnames(OP_species_absolute_day1), value = TRUE)
+input4 <- OP_species_absolute_day1[, select4, drop = FALSE]
+meta4 <- OP_group[OP_group$SampleID %in% select4,]
+input4 <- input4[-247, ]
+ZicoSeq4 <- ZicoSeq(meta.dat = meta4, feature.dat = as.matrix(input4), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE,outlier.pct=0.01, winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta4$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an4 <- as.data.frame(colnames(input4))
+names(Fd_an4) <- "ID"
+Fd_an4$ID <- sub(".+_", "", Fd_an4$ID)
+Fd_an4 <- Fd_an4$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="13");#0 tumer
+  sampleIdsControl<-which(classLabel=="17");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r4 <- as.data.frame(foldChange(input4,Fd_an4))
+ZicoSeq4_p <- as.data.frame(ZicoSeq4$p.adj.fdr)
+ZicoSeq4_p$R2 <- ZicoSeq4$R2
+ZicoSeq4_p$Foldchange <- Fd_r4$`foldChange(input4, Fd_an4)`
+ZicoSeq4_p$type <- "13_17"
+names(ZicoSeq4_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq4_p <- tibble::rownames_to_column(ZicoSeq4_p, var = "taxa")
+rownames(ZicoSeq4_p) <- NULL
+###13:00 vs 21:00
+select5 <- grep("_13$|_21$", colnames(OP_species_absolute_day1), value = TRUE)
+input5 <- OP_species_absolute_day1[, select5, drop = FALSE]
+meta5 <- OP_group[OP_group$SampleID %in% select5,]
+ZicoSeq5 <- ZicoSeq(meta.dat = meta5, feature.dat = as.matrix(input5), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE,outlier.pct=0.01, winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta5$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an5 <- as.data.frame(colnames(input5))
+names(Fd_an5) <- "ID"
+Fd_an5$ID <- sub(".+_", "", Fd_an5$ID)
+Fd_an5 <- Fd_an5$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="13");#0 tumer
+  sampleIdsControl<-which(classLabel=="21");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r5 <- as.data.frame(foldChange(input5,Fd_an5))
+ZicoSeq5_p <- as.data.frame(ZicoSeq5$p.adj.fdr)
+ZicoSeq5_p$R2 <- ZicoSeq5$R2
+ZicoSeq5_p$Foldchange <- Fd_r5$`foldChange(input5, Fd_an5)`
+ZicoSeq5_p$type <- "13_21"
+names(ZicoSeq5_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq5_p <- tibble::rownames_to_column(ZicoSeq5_p, var = "taxa")
+rownames(ZicoSeq5_p) <- NULL
+###17:00 vs 21:00
+select6 <- grep("_17$|_21$", colnames(OP_species_absolute_day1), value = TRUE)
+input6 <- OP_species_absolute_day1[, select6, drop = FALSE]
+meta6 <- OP_group[OP_group$SampleID %in% select6,]
+ZicoSeq6 <- ZicoSeq(meta.dat = meta6, feature.dat = as.matrix(input6), 
+                       grp.name = 'group',feature.dat.type = "other",
+                       # Winsorization to replace outliers
+                       is.winsor = TRUE,outlier.pct=0.01, winsor.end = 'both',
+                       # Posterior sampling 
+                       is.post.sample = F,
+                       # Use the square-root transformation
+                       stats.combine.func = max,
+                       # Permutation-based multiple testing correction
+                       perm.no = 999,  strata =  meta6$Env , 
+                       # Reference-based multiple stage normalization
+                       ref.pct = 0.5, stage.no = 6, excl.pct = 0.2,
+                       # Family-wise error rate control
+                       is.fwer = TRUE, verbose = TRUE, return.feature.dat = TRUE)
+Fd_an6 <- as.data.frame(colnames(input6))
+names(Fd_an6) <- "ID"
+Fd_an6$ID <- sub(".+_", "", Fd_an6$ID)
+Fd_an6 <- Fd_an6$ID
+foldChange<-function(inData,classLabel)
+{
+  #Calculating all probes' FC value
+  sampleIdsCase<-which(classLabel=="17");#0 tumer
+  sampleIdsControl<-which(classLabel=="21");#1 normal
+  probeFC<-rep(0,nrow(inData))
+  for(i in 1:nrow(inData))
+  {
+    probeFC[i]<-mean(as.numeric(as.vector(inData[i,sampleIdsCase])))/mean(as.numeric(as.vector(inData[i,sampleIdsControl])));
+  }
+  probeFC<-log(probeFC,base=2);
+  result<-probeFC; 
+  return(result)
+}
+Fd_r6 <- as.data.frame(foldChange(input6,Fd_an6))
+ZicoSeq6_p <- as.data.frame(ZicoSeq6$p.adj.fdr)
+ZicoSeq6_p$R2 <- ZicoSeq6$R2
+ZicoSeq6_p$Foldchange <- Fd_r6$`foldChange(input6, Fd_an6)`
+ZicoSeq6_p$type <- "17_21"
+names(ZicoSeq6_p) <- c("p.adj.fdr","R2","Foldchange","type")
+ZicoSeq6_p <- tibble::rownames_to_column(ZicoSeq6_p, var = "taxa")
+rownames(ZicoSeq6_p) <- NULL
+
+ZicoSeq_diff_absolute <- NULL
+ZicoSeq_diff_absolute <- rbind(ZicoSeq1_p,ZicoSeq2_p,ZicoSeq3_p,ZicoSeq4_p,ZicoSeq5_p,ZicoSeq6_p)
+#ZicoSeq_diff_absolute$p_BH <- p.adjust(ZicoSeq_diff_absolute$p_raw,method = "BH")
+write.csv(ZicoSeq_diff_absolute,"ZicoSeq_diff_absolute_fdr_day1.csv",quote = F)
+###p < 0.05的
+ZicoSeq_diff_absolute_filter1 <- ZicoSeq_diff_absolute[ZicoSeq_diff_absolute$p.adj.fdr < 0.05, ]
+#ZicoSeq_diff_absolute_filter1$Fd_abs  <- abs(ZicoSeq_diff_absolute_filter1$Foldchange)
+ZicoSeq_diff_absolute_number <- as.data.frame(table(ZicoSeq_diff_absolute_filter1$taxa))
+names(ZicoSeq_diff_absolute_number) <- c("taxa","number")
+write.csv(ZicoSeq_diff_absolute_number,"ZicoSeq_diff_absolute_number_day1.csv",quote = F,row.names = F)
+
+
+
+```
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

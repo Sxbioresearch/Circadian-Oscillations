@@ -1,0 +1,411 @@
+---
+title: "Fig6_paint"
+output: html_document
+date: "2025-12-05"
+---
+
+```{r setup, include=FALSE}
+path <- 'F:/C/OP_analysis/Fig_paint/Fig6'
+knitr::opts_chunk$set(echo = TRUE,
+                      tidy=TRUE,
+                      error = T)
+knitr::opts_knit$set(root.dir= path)
+```
+
+```{r}
+OP_S_otu <- read.table("merge_otus.csv",header = T,sep = ",",row.names = 1)
+###rarefaction
+data = as.data.frame(t(rrarefy(t(OP_S_otu), min(colSums(data2))))) 
+OP_S_relative <- read.table("merge_relative_filter.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+
+###alpha diversity
+library(vegan)
+alpha_diversity <- function(x) {
+  observed_species <- estimateR(x)[1, ]
+  Chao1 <- estimateR(x)[2, ]
+  ACE <- estimateR(x)[4, ]
+  Shannon <- diversity(x, index = 'shannon',base = 2)
+  Simpson <- diversity(x, index = 'simpson')    #注意，这里是Gini-Simpson 指数
+  goods_Coverage <- 1 - rowSums(x == 1) / rowSums(x)
+  result <- data.frame(observed_species, ACE,Chao1, Shannon, Simpson, goods_Coverage)
+  result
+}
+
+####Fig6A
+alpha <- read.table("alpha_diversity_rrare.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+group <- read.table("all_group.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+names(alpha)[1] <- "samples"
+alpha_merge <- merge(alpha,group,by="samples")
+library(dplyr)
+alpha_merge <- alpha_merge %>%
+  arrange(type)
+###画图
+library(ggpubr)
+ggboxplot(alpha_merge, x = "group", y = "Shannon", color= "group",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2) +
+  #stat_compare_means(aes(group = group))+
+  scale_color_manual(values = c("#D49464","#5B8FA8")) +
+  stat_compare_means(method = "wilcox.test",paired = TRUE)+ 
+  ylab("Shannon index")+xlab("")+
+  theme(aspect.ratio = 2)
+
+###Fig6B
+library(ggpubr)
+ggboxplot(alpha_merge, x = "group", y = "observed_species", color= "group",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2) +
+  #stat_compare_means(aes(group = group))+
+  scale_color_manual(values = c("#D49464","#5B8FA8")) +
+  stat_compare_means(method = "wilcox.test",paired = TRUE)+ 
+  ylab("Observed species")+xlab("")+
+  theme(aspect.ratio = 2)
+
+
+
+```
+
+```{r}
+###Fig6C & Fig6D
+OP_S_merge <- read.table("OP_S_merge.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+library(dplyr)
+df_median_OP <- OP_S_merge %>%
+  group_by(OP_id2) %>%  
+  summarise(OP_abundance_median = median(OP_abundance, na.rm = TRUE))  
+names(df_median_OP)[1] <- "id"
+
+df_median_S <- OP_S_merge %>%
+  group_by(S_id2) %>%  
+  summarise(S_abundance_median = median(S_abundance, na.rm = TRUE))  
+names(df_median_S)[1] <- "id"
+
+df_median <- merge(df_median_OP,df_median_S,by="id",all = TRUE)
+data <- df_median
+data$sample <- data$id
+library(tidyr)
+data <- separate(data, col = 4, into = c("people", "taxa"), sep = "_", extra = "merge")
+data1 <- subset(data, OP_abundance_median != 0 & S_abundance_median != 0)
+inter <- as.data.frame(table(data1$people))
+names(inter) <- c("people","inter_number")
+
+data2 <- subset(data,OP_abundance_median != 0)
+OP_number <- as.data.frame(table(data2$people))
+names(OP_number) <- c("people","OP_number")
+
+data3 <- subset(data,S_abundance_median != 0)
+S_number <- as.data.frame(table(data3$people))
+names(S_number) <- c("people","S_number")
+
+shared_number_paint <- merge(inter,OP_number,by="people")
+shared_number_paint <- merge(shared_number_paint,S_number,by="people")
+shared_number_paint$OP_ratio <- shared_number_paint$inter_number/shared_number_paint$OP_number
+shared_number_paint$S_ratio <- shared_number_paint$inter_number/shared_number_paint$S_number
+
+paint2 <- select(shared_number_paint,-inter_number,-OP_number,-S_number)
+library(reshape2)
+library(ggpubr)
+paint3 <- melt(paint2,id="people")
+
+##Fig6C
+ggboxplot(paint3, x = "variable", y = "value", color= "variable",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2) +
+  stat_compare_means(aes(group = variable))+
+  scale_color_manual(values = c("#D49464","#5B8FA8")) +
+  stat_compare_means()+
+  ylab("Proportion of shared species (number%)")+xlab("")+
+  theme(aspect.ratio = 2)
+
+
+OP_inter_abundance <- data1 %>%
+  group_by(people) %>%
+  summarise(OP_abundance = sum(OP_abundance_median, na.rm = TRUE))
+S_inter_abundance <- data1 %>%
+  group_by(people) %>%
+  summarise(S_abundance = sum(S_abundance_median, na.rm = TRUE))
+OP_all_abundance <- data2 %>%
+  group_by(people) %>%
+  summarise(OP_all_abundance = sum(OP_abundance_median, na.rm = TRUE))
+S_all_abundance <- data3 %>%
+  group_by(people) %>%
+  summarise(S_all_abundance = sum(S_abundance_median, na.rm = TRUE))
+merge_abundance_paint <- left_join(OP_inter_abundance,S_inter_abundance)
+merge_abundance_paint <- left_join(merge_abundance_paint,OP_all_abundance)
+merge_abundance_paint <- left_join(merge_abundance_paint,S_all_abundance)
+merge_abundance_paint$OP_ratio <- merge_abundance_paint$OP_abundance/merge_abundance_paint$OP_all_abundance
+merge_abundance_paint$S_ratio <- merge_abundance_paint$S_abundance/merge_abundance_paint$S_all_abundance
+abundance_paint2 <- select(merge_abundance_paint,-OP_abundance,-S_abundance,-OP_all_abundance,-S_all_abundance)
+abundance_paint3 <- melt(abundance_paint2,id="people")
+abundance_paint4 <- abundance_paint3[abundance_paint3$value > 0.9,]
+#abundance_paint3$log <- log2(abundance_paint3$value)
+
+##Fig6D
+ggboxplot(abundance_paint4, x = "variable", y = "value", color= "variable",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2,outlier.shape = NA) +
+  stat_compare_means(aes(group = variable))+
+  scale_color_manual(values = c("#D49464","#5B8FA8")) +
+  stat_compare_means()+
+  ylab("Proportion of shared species (abundance%)")+xlab("")+
+  theme(aspect.ratio = 2)
+```
+
+
+```{r}
+###Fig6E
+data <- OP_S_relative
+data_trans=t(data)
+jsd <- read.table("merge_jsd_rrare.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+mdata <- read.table("all_group.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+
+      pcoa <- cmdscale(jsd, k = (nrow(data_trans) - 1), eig = TRUE)
+      pcoa_eig <- pcoa$eig
+      barplot(pcoa_eig)
+      pcoa_exp <- pcoa$eig/sum(pcoa$eig)
+      site <- pcoa$point
+      site <- data.frame(pcoa$point)[1:2]
+      site$name <- rownames(site)
+      rownames(mdata)->mdata$name
+      #merge(shannon_index_s1,s_meta,by='SampleID')->s1_merge
+      merge(site,mdata,by='name')->merge
+      merge[order(merge$name,decreasing = T),]->merge
+      site[order(site$name,decreasing = T),]->site
+      colnames(merge)
+      site$group <- merge$group
+      #site$type<-merge$type
+     # site$group<-factor(site$group,levels=c("S2","S3","S4","S5"))
+      pcoa1 <- paste('PCoA axis1 :', round(100*pcoa_exp[1], 2), '%')
+      pcoa2 <- paste('PCoA axis2 :', round(100*pcoa_exp[2], 2), '%')
+      aggregate(X1~group,site,mean)->mean.x
+      aggregate(X2~group,site,mean)->mean.y
+      df1<-merge(site,mean.x,by="group")
+      df1<-merge(df1,mean.y,by="group")
+      colnames(df1)<-c("group","X1","X2","name","mean.x","mean.y")
+ #install.packages("ggExtra")
+ library(ggExtra)  
+ library(ggsci)
+ library(ggplot2)
+ggplot(df1, aes(X1,X2,color=group))+
+        geom_point(size=3,alpha=0.6)+   
+       geom_segment(aes(x=mean.x, y=mean.y, xend=X1, yend=X2),size=0.05,alpha=0.7)+ 
+        geom_point(aes(x=mean.x,y=mean.y),size=6,alpha=2)+  
+    #    scale_color_jama()+
+        scale_color_manual(values = c("#D49464","#5B8FA8"))+
+       scale_x_continuous(limits = c(-0.45, 0.45))+
+       scale_y_continuous(limits = c(-0.45, 0.45))+
+        #scale_linetype_manual(values = "dashed")+
+        # ggrepel::geom_label_repel(data=unique(select(df1,1,5,6)),aes(mean.x,mean.y,color=group),label=unique(df1$group),fontface="bold",show.legend = F,box.padding = 0,size=5)+
+               theme(axis.title = element_text(size = rel(1.5), color = "black"))+
+    #scale_color_manual(values =c('#91D1C2FF','#F39B7FFF','#E64B35FF','#00A087FF') )+
+    
+   # guides(fill=guide_legend(title = NULL))+
+   # guides (fill = "none")+
+   # theme(legend.position = "none")+
+    xlab(paste("PCo1"," (",round(pcoa_exp[1]*100,1),"%",")",sep = ""))+
+    ylab(paste("PCo2"," (",round(pcoa_exp[2]*100,1),"%",")",sep = ""))+
+    theme_bw()+
+    theme(panel.grid = element_blank())+
+   theme(aspect.ratio = 1)
+```
+
+
+```{r}
+##Fig6F
+jsd_group <- read.table("merge_jsd_unique_group_new_rrare.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+data <- jsd_group
+data$group2 <- data$group
+data <- data %>%
+   mutate(group2 = if_else(group2 == "inter-OP" & timeA == timeB, "inter-OP-sametime", group2))
+data <- data %>%
+   mutate(group2 = if_else(group2 == "inter-S" & timeA == timeB, "inter-S-sametime", group2))
+
+my_comparisons <- list(c("paired-OP-S","inter-OP"),
+                                        c("paired-OP-S","inter-S"),
+                                        c("paired-OP-S","unpaired-OP-S"),
+                       c("paired-OP-S","inter-OP-sametime"),
+                       c("paired-OP-S","inter-S-sametime"),
+                                        c("inter-OP","inter-S"),
+                                        c("inter-OP","unpaired-OP-S"),
+                       c("inter-OP","inter-OP-sametime"),
+                        c("inter-OP","inter-S-sametime"),
+                                        c("inter-S","unpaired-OP-S"),
+                       c("inter-S","inter-OP-sametime"),
+                        c("inter-S","inter-S-sametime"),
+                       c("unpaired-OP-S","inter-OP-sametime"),
+                       c("unpaired-OP-S","inter-S-sametime"),
+                       c("inter-OP-sametime","inter-S-sametime")
+                       )
+
+ggboxplot(data,"group2","value",order = levels(reorder(data$group2, data$value, FUN = median)),fill="grey",width = 0.5,legend = "none")+
+  ylab("JSD distance")+xlab("")+
+  stat_compare_means(comparisons = my_comparisons,method="wilcox.test",
+                     label = "p.signif")+
+  theme(axis.text.x = element_text(angle = 90))+
+  theme(aspect.ratio = 1.5)
+```
+
+```{r}
+###Fig6G
+ZicoSeq1_p <- read.table("ZicoSeq_OP_S_relative_new_rrare.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+ZicoSeq1_p$log10P <- log10(ZicoSeq1_p$p.adj.fdr)
+ZicoSeq1_p$group <- "1"
+ZicoSeq1_p$group[ZicoSeq1_p$p.adj.fdr < 0.05] <- "diff"
+ZicoSeq1_p$group[ZicoSeq1_p$p.adj.fdr >= 0.05] <- "same"
+ZicoSeq1_p$group[ZicoSeq1_p$group == "diff" & ZicoSeq1_p$log2FC > 0] <- "OP"
+ZicoSeq1_p$group[ZicoSeq1_p$group == "diff" & ZicoSeq1_p$log2FC < 0] <- "saliva"
+#ZicoSeq1_p$log10absolute <- log10(ZicoSeq1_p$big_absolute_mean)
+library(ggrepel)
+ggplot(ZicoSeq1_p,aes(log2FC, -log10P,
+                                         size=mean_abundance,
+                                     #    shape=group,
+                                        alpha=prevalence_ratio
+                                      ))+
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "#999999")+
+  geom_vline(xintercept = c(-1,1), linetype = "dashed", color = "#999999")+
+ # geom_vline(xintercept = c(-4,4), linetype = "dashed", color = "#999999")+
+  geom_point(aes(color = group,color = "black", stroke = 0.5)) +
+  scale_color_manual(values = c("#D49464","#5B8FA8","#868686FF"))+
+   scale_x_continuous(limits = c(-10, 10))+
+  # scale_alpha(range = c(0.2, 0.8))
+ scale_size_continuous(range = c(2, 5), breaks = c(0.001,0.005,0.01,0.05, 0.1))+
+#  scale_x_continuous(
+  #  limits = c(-8, 8),
+#    breaks = seq(-8, 8, by = 2)
+ # ) +
+#  ylim(0, 3) +
+  theme_bw(base_size = 12)+
+ # ggsci::scale_color_jama() +
+  theme(panel.grid = element_blank(),
+        legend.position = 'right') +
+ # geom_text_repel(data = as.data.frame(filter(ZicoSeq1_p, -ZicoSeq1_p$log10P >  -log10(0.05) & ZicoSeq1_p$mean_abundance > 0.01 )), show.legend=TRUE, max.overlaps = getOption("ggrepel.max.overlaps", default = 50),aes(label = ZicoSeq1_p$taxa),color="black") +
+#  geom_segment(
+#    data = filter(ZicoSeq1_p, abs(log2FC) > log2(5) & -log10P > 1 & log10absolute > -1),
+   # aes(x = log2FC, y = -log10P, xend = log2FC, yend = -log10P - 0.5),
+   # arrow = arrow(type = "closed", angle = 0),
+ #   color = "black",
+  #  size = 0.1
+#  )+
+  geom_text_repel(
+    data = subset(ZicoSeq1_p, -log10P >  -log10(0.05) & mean_abundance > 0.01),
+   max.overlaps = getOption("ggrepel.max.overlaps", default = 20),
+    aes(label = taxa),
+   size = 2,color="black"
+ )+
+  xlab("Log2FoldChange")+
+  ylab("-Log10(adjust.p)")+
+  theme(aspect.ratio = 1)
+```
+
+```{r}
+###Fig6H
+library(UpSetR)       
+library(VennDiagram) 
+all_merge_upset <- read.table("all_merge_upset_new_version2.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE,na.strings="")
+all_merge_upset_list <- list(na.omit(all_merge_upset[,1]), na.omit(all_merge_upset[,2]), na.omit(all_merge_upset[,3]), na.omit(all_merge_upset[,4]), na.omit(all_merge_upset[,5]), na.omit(all_merge_upset[,6]),na.omit(all_merge_upset[,7]),
+na.omit(all_merge_upset[,8])) 
+names(all_merge_upset_list) <- colnames(all_merge_upset[1:8])   
+
+upset(fromList(all_merge_upset_list), 
+      nsets = 100,    
+      nintersects = 40, 
+      order.by = "freq",
+      keep.order = F, 
+      mb.ratio = c(0.6,0.4),  
+)
+
+```
+
+
+```{r}
+###Fig6I
+###Comparison of each rhythmic species between the two sites in each subject
+library(UpSetR)
+library(VennDiagram) 
+rhythempattern_merge_upset <- read.table("rhythempattern_merge_upset_new_version2.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE,na.strings="")
+common_elements <- intersect(rhythempattern_merge_upset$OP_absence, rhythempattern_merge_upset$S_absence)
+rhythempattern_merge_upset_new <- rhythempattern_merge_upset
+rhythempattern_merge_upset_new1 <- rhythempattern_merge_upset_new$OP_absence[!rhythempattern_merge_upset_new$OP_absence %in% common_elements]
+
+rhythempattern_merge_upset_new2 <- rhythempattern_merge_upset_new$S_absence[!rhythempattern_merge_upset_new$S_absence %in% common_elements]
+
+rhythempattern_merge_upset_list_new <- list(na.omit(rhythempattern_merge_upset_new1), na.omit(rhythempattern_merge_upset_new[,2]), na.omit(rhythempattern_merge_upset_new[,3]), na.omit(rhythempattern_merge_upset_new2), na.omit(rhythempattern_merge_upset_new[,5]), na.omit(rhythempattern_merge_upset_new[,6]),
+na.omit(rhythempattern_merge_upset_new[,7]),
+na.omit(rhythempattern_merge_upset_new[,8])
+#na.omit(rhythempattern_merge_upset[,9]),
+#na.omit(rhythempattern_merge_upset[,10])
+)   
+names(rhythempattern_merge_upset_list_new) <- colnames(rhythempattern_merge_upset_new[1:8])    
+
+upset(fromList(rhythempattern_merge_upset_list_new),  
+      nsets = 100,     
+      nintersects = 40, 
+      order.by = "freq", 
+      keep.order = F,
+      mb.ratio = c(0.6,0.4),  
+  queries = list(
+  list(
+    query = intersects, 
+    params = list("pattern_diff","OP_rhythem","S_rhythem","OP_exist","S_exist"), 
+    color = "#D49464", 
+    active = T),
+  list(
+    query = intersects, 
+    params = list("pattern_same","OP_rhythem","S_rhythem","OP_exist","S_exist"), 
+    color = "#725663", 
+    active = T),
+  list(
+    query = intersects, 
+    params = list("OP_rhythem","OP_exist","S_exist"), 
+    color = "#ADB17D", 
+    active = T),
+  list(
+    query = intersects, 
+    params = list("S_rhythem","OP_exist","S_exist"), 
+    color = "#5B8FA8", 
+    active = T)
+      )
+)
+
+
+```
+
+```{r}
+library(UpSetR)
+
+# 创建一个示例数据集
+example_data <- data.frame(
+  A = sample(c(TRUE, FALSE), 100, replace = TRUE),
+  B = sample(c(TRUE, FALSE), 100, replace = TRUE),
+  C = sample(c(TRUE, FALSE), 100, replace = TRUE)
+)
+
+# 使用 UpSetR 创建 UpSet 图
+upset(example_data, sets = c("A", "B", "C"))
+
+# 设置隐藏集合 B
+upset_options(hide_sets = c("B"))
+upset(fromList(example_data), sets = c("A", "B", "C"))
+
+
+upset(fromList(example_data), sets = c("A", set("B", hide = TRUE), "C"))
+
+
+```
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,193 @@
+---
+title: "Fig5_paint"
+output: html_document
+date: "2025-12-05"
+---
+
+```{r setup, include=FALSE}
+path <- 'F:/C/OP_analysis/Fig_paint/Fig5'
+knitr::opts_chunk$set(echo = TRUE,
+                      tidy=TRUE,
+                      error = T)
+knitr::opts_knit$set(root.dir= path)
+```
+
+```{r}
+####Fig5A
+OP_paint1 <- read.table("OP_paint1.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+library(tidyr)
+OP_paint2 <-  separate(OP_paint1, col = 1, into = c("pathway", "name"), sep = ":", extra = "merge")
+OP_paint2$count <- 1
+library(dplyr)
+summarized_pathway <- OP_paint2 %>%
+  group_by(pathway) %>%
+  summarise(total_sum = sum(sum))
+#Top 30 pathway
+a <- summarized_pathway %>%
+  top_n(30, total_sum)
+library(dplyr)
+a_sorted <- arrange(a, desc(total_sum))
+order <- a_sorted$pathway
+order_new <- rev(order)
+OP_target_merge <- read.table("OP_target_merge.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_target_merge$log <- log10(OP_target_merge$sum)
+OP_target_merge_new <- subset(OP_target_merge,OP_target_merge$pathwayname %in% order)
+OP_target_merge_new$pathwayname <- factor(OP_target_merge_new$pathwayname, levels = order_new)
+library(ggplot2)
+library(ggstar)
+library(scales)
+ggplot(OP_target_merge_new,aes(x = people, 
+              y = pathwayname, 
+          #    size = log,
+             alpha = p
+              
+             )) +
+  geom_tile(aes(fill = OP_cluster), color = '#4C4C4C', size = 0.25) +
+ # geom_point(aes(shape=group,fill = OP_cluster), colour='#4C4C4C',stroke = 0.25)+
+  scale_fill_manual(values = c("#725663FF","#D49464FF","#ADB17DFF","#5B8FA8FF","white"))+
+ # scale_fill_manual(values=c("#0073C299","#A7303099","#EFC00099","#3B3B3B99","white"))+
+  scale_alpha_continuous(range = c(1, 0), limits = c(0, 0.2)) + 
+ # scale_shape_manual(values = c(1, 22))+
+  labs(x = "Individual", y = "Taxa")+          
+ # scale_radius(                               
+ #   range=c(2,6),                             
+  #  name="log(sum)")+                            
+ # scale_size_continuous(range = c(1.5, 5.5))+
+  theme_bw() +                                 
+  theme(axis.text.x = element_text(angle = 30,vjust = 0.85,hjust = 0.75))+
+  theme(panel.grid = element_blank())
+
+```
+
+
+```{r}
+##Fig5B
+###Sankey diagram(sum refer to reletive abundance)
+OP_paint1 <- read.table("OP_paint1.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+library(tidyr)
+OP_paint2 <-  separate(OP_paint1, col = 1, into = c("pathway", "name"), sep = ":", extra = "merge")
+OP_paint2$count <- 1
+OP_paint3 <- as.data.frame(cbind(OP_paint2$pathway,OP_paint2$species,OP_paint2$Superclass2,OP_paint2$ownership_new,OP_paint2$count,OP_paint2$sum))
+names(OP_paint3) <- c("pathway","taxa","superclass2","label","count","sum")
+###networkD3
+library(networkD3)
+library(dplyr)
+links_new <- as.data.frame(OP_paint3[,2])
+links_new <- cbind(links_new,OP_paint3[,1])
+links_new <- cbind(links_new,OP_paint3$sum)
+names(links_new) <- c("source","target","abundance")
+nodes_new <- data.frame(
+  name=c(as.character(links_new$source),
+         as.character(links_new$target)) %>% unique()
+)
+OP_cluster <-  read.table("OP_cluster.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+names(OP_cluster)[1] <- "source"
+links_merge <- merge(links_new,OP_cluster,by="source",all.x = T)
+pathway_taxa_cluster <- read.table("pathway_taxa_cluster.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+nodes_merge <- merge(nodes_new,pathway_taxa_cluster,by="name",all.x = T)
+#write.csv(nodes_merge,"nodes_merge.csv",quote = F)
+#nodes_merge <- read.table("nodes_merge.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+links_merge$IDsource <- match(links_merge$source, nodes_merge$name)-1
+links_merge$IDtarget <- match(links_merge$target, nodes_merge$name)-1
+colorfunc <- JS('colorfunc = function(i) { 
+                  if (i == "cluster1") {
+                    return "#725663";
+                  } else if (i == "cluster2") {
+                    return "#D49464";
+                  } else if (i == "mix") {
+                    return "#5B8FA8";
+                  } else {
+                    return d3.schemeCategory20[Math.floor(Math.random()*20)];
+                  }
+                };')
+p <-  sankeyNetwork(Links = links_merge, Nodes = nodes_merge,
+                    Source = "IDsource", Target = "IDtarget",
+                    Value = "abundance", 
+                    NodeID = "name",
+                    NodeGroup="group",LinkGroup="ownership_new",
+                    colourScale = colorfunc,
+                    iterations=0, 
+                    sinksRight=FALSE)
+p
+
+
+```
+
+
+```{r}
+###Fig5C
+OP_class2_enrichment <- read.table("OP_class2_enrichment_rhythem_new.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+names(OP_class2_enrichment)[1] <- "class2" 
+###
+OP_class2_enrichment <- OP_class2_enrichment[OP_class2_enrichment$rhythem != 0, ]
+library(ggplot2)
+#install.packages("ggstar")
+library(ggstar)
+ggplot(OP_class2_enrichment, aes(x = reorder(class2, rhythem_ratio/all_ratio), 
+                                 y = rhythem_ratio/all_ratio, 
+                                 size = rhythem,
+                                 shape = group,
+                                 fill = p)) +
+  geom_col() +
+  scale_fill_gradientn(colours = c('#900405','#c72323','#fc3c3c','#fcc6c6','grey'),
+                       limits = c(0, 0.05)) +
+  #scale_fill_manual(values = c("grey" = "grey", "red" = "red"), 
+                 #   limits = c(0.05, Inf)) +
+  labs(x = "Superclass2_pathway", y = "Rhythem_ratio/all_ratio") +
+  coord_flip() +
+  theme_bw() +
+  theme(panel.grid = element_blank())
+
+
+```
+
+```{r}
+### Enrichment analysis
+library(tidyr)
+##Pathway hierarchy information
+Metacyc <- read.table("MetaCyc_pathway_map.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+names(Metacyc)[1] <- "name1"
+Metacyc$name1 <- gsub("\"", "", Metacyc$name1)
+OP_pathway <- read.table("pathway_all.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_pathway$pathway_raw <- OP_pathway$pathway
+OP_pathway$pathway <- gsub("\"", "", OP_pathway$pathway)
+OP_pathway <- separate(OP_pathway, col = 1, into = c("name1", "name2"), sep = ": ", extra = "merge")
+OP_name1 <- OP_pathway$name1
+OP_class <- subset(Metacyc, Metacyc$name1 %in% OP_name1)
+OP_merge_class <- merge(OP_pathway,OP_class, by = "name1",all = T)
+OP_rhythem <- read.table("pathway_rhythem.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_rhythem <- OP_rhythem$name
+OP_rhythem_class <-subset(OP_pathway, OP_pathway$pathway %in% OP_rhythem)
+OP_anrhythem_class <- subset(OP_pathway, !(OP_pathway$pathway %in% OP_rhythem))
+#enrichment
+OP_class2 <- read.table("pathway_class.tsv",header = T,sep = "\t",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_class2$p <- 1
+for (i in 1:nrow(OP_class2)) {
+  OP_class2[i,9] <- phyper(OP_class2[i,8]-1, OP_class2[i,6], OP_class2[i,5]-OP_class2[i,6], OP_class2[i,7],lower.tail=FALSE)
+}
+OP_class2$BH <- p.adjust(OP_class2$p,method = "BH")
+```
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

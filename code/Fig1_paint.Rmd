@@ -1,0 +1,165 @@
+---
+title: "OP_figure_paint"
+author: "sx"
+date: "2024-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+path <- 'F:/C/OP_analysis/Fig_paint/Fig1'
+knitr::opts_chunk$set(echo = TRUE,
+                      tidy=TRUE,
+                      error = T)
+knitr::opts_knit$set(root.dir= path)
+```
+
+```{r}
+###Fig1 B
+##Comparison of bacterial load
+OP_absolute <- read.table("OP_absolute_merge.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+library(ggplot2)
+library(ggsci)
+library(ggpubr)
+OP_absolute$Timepaint = factor(OP_absolute$Timepaint,levels = c("9:00", "13:00", "17:00","21:00"))
+my_comparisons <- list( c("9:00","13:00"),c("9:00","17:00"),c("9:00","21:00"),c("13:00","17:00"),c("13:00","21:00"), c("17:00","21:00"))
+OP_absolute$Timeline <- as.character(OP_absolute$Timeline)
+ggboxplot(OP_absolute, x = "Timepaint", y = "Absolute", color= "Date1",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2) +
+  stat_compare_means(aes(group = Date1),label = "p.signif")+
+  scale_color_jco()+
+#  stat_compare_means()+
+ stat_compare_means(comparisons = my_comparisons,label =  "p.signif",hide.ns = TRUE)+
+  ylab("Absolute quantitative")+xlab("Time")
+###Multiple hypothesis testing
+p <- c(0.94,0.62,0.48,0.54,0.00024,0.011,0.48,0.26,0.005,0.093)
+q <- p.adjust(p,method = "BH")
+#0.94000000 0.68888889 0.67500000 0.67500000 0.00240000 0.03666667 0.67500000 0.52000000 0.02500000 0.23250000
+
+
+#Fig1C
+OP_paint <-  read.table("OP_people_time_paint.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+OP_paint$group <- factor(OP_paint$group,levels = c("Time_Peole_same","Time_same","People_same"))
+ggplot(OP_paint, aes(x = group)) +
+ # geom_bar(aes(y = top5), stat = "identity",fill = "#AEC7E8FF")+
+  geom_bar(aes(y = top1), stat = "identity", fill ="#1F77B4FF",width=0.7) +
+  coord_fixed(ratio = 6.5) +
+  scale_y_continuous(limits = c(0, 0.5),breaks = seq(0,0.5,0.1))+
+  theme_bw()+
+  theme(
+    axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 2)
+
+
+###Fig1 D
+###distance analysis
+datanew <- read.table("OP_BC_timediff_new.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+datanew$Timediff <- as.character(datanew$Timediff)
+library(ggpubr)
+library(ggplot2)
+datanew$Timediff = factor(datanew$Timediff,levels = c("4","8","12","16","20","24","28","32","36","40","44"))
+ggplot(datanew, aes(x=Timediff,y=value)) + 
+  geom_boxplot(outlier.shape = NA,fill="#4A699099")+
+  stat_boxplot(geom = "errorbar",width=0.2)+
+stat_compare_means(method = "wilcox.test",label = "p.signif",ref.group = "24")+  
+  theme_bw()+
+  xlab("Time (hr)")+ylab("Bray_Curtis")+
+  theme(aspect.ratio = 1)+
+  theme(panel.grid = element_blank())
+# Multiple hypothesis testing
+test_results <- compare_means(value ~ Timediff, data = datanew, method = "wilcox.test", ref.group = "24")
+q <- p.adjust(test_results$p,method = "BH")
+
+
+###Fig1 E
+###Autocorrelation of alpha diversity 
+OP_auto_paint <- read.table("OP_alpha_auto_new.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
+library(ggplot2)
+OP_auto_paint$Timelag = factor(OP_auto_paint$Timelag ,levels = c("4","8","12","16","20","24","28","32","36","40","44"))
+my_comparisons <- list( c("24","28"),c("24","32"),c("24","36"),c("24","40"),c("24","44"),c("24","12"),c("24","8"),c("24","4"),c("24","20"),c("24","16"))
+ggplot(OP_auto_paint,aes(x=Timelag, y=acf)) + 
+  geom_boxplot(outlier.shape = NA,fill="#79AF9799")+
+  stat_boxplot(geom = "errorbar",width=0.2)+
+stat_compare_means(method = "wilcox.test",label = "p.signif",ref.group = "24")+ 
+  theme_bw()+
+  xlab("Time (hr)")+ylab("Autocorrelation coefficient")+
+  theme(aspect.ratio = 1)+
+  theme(panel.grid = element_blank())
+### Multiple hypothesis testing
+test_results <- compare_means(acf ~ Timelag, data = OP_auto_paint, method = "wilcox.test", ref.group = "24")
+q <- p.adjust(test_results$p,method = "BH")
+
+
+##FigS1A
+##hierarchical clustering
+library(ggtree)
+OP_dis <- read.table('OP_BC.csv',header = T, row.names = 1, sep = ',', stringsAsFactors = FALSE, check.names = FALSE) 
+OP_dis1 <- as.dist(OP_dis) 
+OP_hc = hclust(OP_dis1, method = "ward.D2")
+OP_clus <- cutree(OP_hc, 4)
+OP_d = data.frame(label = names(OP_clus), 
+               member = factor(OP_clus))
+###metadata
+OP_group <- read.table('OP_group_merge.csv',header = T, sep = ',', stringsAsFactors = FALSE, check.names = FALSE)
+OP_dd <- cbind(OP_d,OP_group)
+library(ggsci)
+library(randomcoloR)  
+OPtree <- distinctColorPalette(22) 
+OPtree=pal_ucscgb("default")(22)
+ggtree(OP_hc,layout="fan", branch.length = "none", ladderize = FALSE) %<+% OP_dd + 
+  geom_tippoint(size=3.2, shape=21, aes(fill=factor(People), x=x)) + 
+   scale_fill_manual(values=OPtree)+
+  #scale_fill_brewer(palette = "Set1")+
+  geom_tiplab(aes(color = Time), hjust=0.01,size=3,parse=TRUE,align=TRUE,offset=0.5)+ 
+  scale_color_jco()
+```
+
+```{r}
+##Relevant calculation methods
+###alpha diversity calculate
+alpha_diversity <- function(x) {
+  Shannon <- diversity(x, index = 'shannon',base = 2)
+  Simpson <- diversity(x, index = 'simpson')   
+  goods_Coverage <- 1 - rowSums(x == 1) / rowSums(x)
+  result <- data.frame(Shannon, Simpson, goods_Coverage)
+  result
+}
+alpha <- alpha_diversity(data)
+
+### Autocorrelation of alpha diversity
+OP_autoresult <- NULL
+for (j in seq(1,176,8)) {
+  a <- acf(OP_all[j:(j+7),1],lag.max=NULL,type = c("correlation"),na.action = na.pass,plot = F)
+  a <- with(a,data.frame(lag,acf))
+  OP_autoresult <- rbind(OP_autoresult,a)
+}
+
+###beta diversity
+BC=phyloseq::distance(data_trans2, method = "bray")
+
+```
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

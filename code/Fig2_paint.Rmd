@@ -1,0 +1,215 @@
+---
+title: "Fig2_paint"
+author: "sx"
+date: "2024-01-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+path <- 'F:/C/OP_analysis/Fig_paint/Fig2/'
+knitr::opts_chunk$set(echo = TRUE,
+                      tidy=TRUE,
+                      error = T)
+knitr::opts_knit$set(root.dir= path)
+```
+
+
+```{r}
+#####Fig S2 Pipline of select rhythmic species
+###1、Optimal p value cut-off 
+##circacompare method
+circa_Youdeng <- read.table("OP_all_circa_Youdeng_merge.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+df <- circa_Youdeng
+library(ggplot2)
+##FigS2A
+#ROC 
+ggplot(df,aes(x=FPR,y=TPR))+
+  geom_line(color="#767676ff",size=1)+
+  geom_point(color="#3E3E23FF",size=1.5)+
+  geom_vline(xintercept = 0.11, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 0.89, linetype = "dashed", color = "red")+
+  xlab("FPR")+ylab("TPR")+
+  theme_bw()+
+  theme(
+    axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 1)
+## eJTK method
+eJTK_Youdeng <- read.table("OP_all_eJTK_Youdeng.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+df <- eJTK_Youdeng
+library(ggplot2)
+##FigS2B
+#ROC
+ggplot(df,aes(x=FPR,y=TPR))+
+  geom_line(color="#767676ff",size=1)+
+  geom_point(color="#3E3E23FF",size=1.5)+
+  geom_vline(xintercept = 0.15, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 0.94, linetype = "dashed", color = "red")+
+  xlab("FPR")+ylab("TPR")+
+  theme_bw()+
+  theme(
+    axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 1)
+
+###2、Optimal prevalence cut-off 
+##circacompare
+OP_circa_all_new <- read.table("OP_circa_ratio_merge.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+OP_circa_all_new$type <- factor(OP_circa_all_new$type, levels = c("real", "random"))
+library(ggplot2)
+##FigS2C
+ggplot(OP_circa_all_new, aes(x = ratio,group=type,fill=type)) +
+geom_density(  color = "#D3D3D3",
+               lwd = 0.5,
+               linetype = 1,
+               alpha=0.5)+
+  scale_fill_manual(values = c("#69b3a2","#F5F5F5")) +
+  xlab("Ratio of people")+
+  theme_bw()+
+  coord_cartesian(xlim = c(0, 1))+
+  scale_x_continuous(breaks = seq(0, 1, by = 0.1))+
+  geom_vline(xintercept = 0.45, linetype = "dashed", color = "red") +
+   theme(
+    axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 1)
+##eJTK
+OP_eJTK_all_new <- read.table("OP_eJTK_ratio_merge.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+OP_eJTK_all_new$type <- factor(OP_eJTK_all_new$type, levels = c("real","random"))
+library(ggplot2)
+##FigS2D
+ggplot(OP_eJTK_all_new, aes(x = ratio,group=type,fill=type)) +
+geom_density(  color = "#D3D3D3",
+               lwd = 0.5,
+               linetype = 1,
+               alpha=0.5)+
+  scale_fill_manual(values = c("#69b3a2","#F5F5F5")) +
+  xlab("Ratio of people")+
+  theme_bw()+
+  coord_cartesian(xlim = c(0, 1))+
+  scale_x_continuous(breaks = seq(0, 1, by = 0.1))+
+  geom_vline(xintercept = 0.32, linetype = "dashed", color = "red") +
+    theme(
+    axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank()
+  )+
+  theme(aspect.ratio = 1)
+
+###3、Intersection of two method
+library(VennDiagram)
+library(ggVennDiagram)
+#OP
+OP_circa_target <- read.table("OP_circa_target_new.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+set1 <- OP_circa_target$taxa
+OP_eJTK_target <- read.table("OP_eJTK_target_new.csv",header = T,sep = ",",stringsAsFactors = FALSE)
+set2 <- OP_eJTK_target$taxa
+list_of_sets <- list("Set 1" = set1, "Set 2" = set2)
+##FigS2E
+ggVennDiagram(list_of_sets,
+              category.names = c("circacompare","eJTK"), 
+              label_alpha = 0
+            
+              )+
+   scale_fill_gradient(low = "grey90",high = "grey70")+ 
+  scale_color_manual(values = c("grey20","grey20")) +
+   theme(aspect.ratio = 1)
+
+
+
+```
+
+
+```{r}
+#####Fig2B/FigS3 The clustering plot was obtained through mfuzz，detailed in cluster_analysis.R
+```
+
+
+
+```{r}
+##Fig2
+####The proportion of each rhythmic species in each cluster
+OP_taxa_ratio <- read.table("OP_taxa_ratio_paint2_use.csv",header=T,sep = ",",stringsAsFactors = FALSE,check.names = F)
+a <- data$taxa
+b <- rev(a)
+library(reshape2)
+data_plot = melt(data,id = 'taxa')
+library(ggplot2)  
+library(ggsci)
+data_plot$taxa <- factor(data_plot$taxa,levels <- b)
+data_plot$variable <- factor(data_plot$variable,levels <- c("cluster4_ratio","cluster3_ratio","cluster2_ratio","cluster1_ratio"))
+ggplot( data_plot, aes(x = taxa, y =value , fill = variable))+
+  geom_bar(stat = "identity", position = "stack",alpha=0.9)+
+#  scale_fill_nejm()+
+  scale_fill_manual(values=c("#5B8FA8","#ADB17D","#D49464","#725663"))+
+  geom_hline( yintercept= 0.5, linetype = "dashed",color="grey")+  
+  coord_flip()+
+  theme_bw()+
+  theme(panel.grid = element_blank())
+
+### The oscillation pattern of each species for each individual
+OP_target_use_new <- read.table("OP_target_use_new.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_cluster <- read.table("OP_taxa_people_new.csv",header = T,sep = ",",stringsAsFactors = FALSE,quote = "",check.names=FALSE)
+OP_target_merge <- merge(OP_target_use_new,OP_cluster,by="sample",all=TRUE)
+#write.csv(OP_target_merge,"OP_target_merge.csv",quote = F,row.names = F)
+
+###species order
+OP_taxa_ratio <- read.table("OP_taxa_ratio_paint2_use.csv",header=T,sep = ",",stringsAsFactors = FALSE,check.names = F)
+a <- data$taxa
+b <- rev(a)
+OP_target_merge$log <- log10(OP_target_merge$sum)
+OP_target_merge$taxa <- factor(OP_target_merge$taxa, levels = b)
+
+library(ggplot2)
+#install.packages("ggstar")
+library(ggstar)
+library(scales)
+ggplot(OP_target_merge,aes(x = people, 
+              y = taxa, 
+              size = log,
+             alpha = p,
+              shape=group
+             )) +
+  geom_point(aes(fill = cluster), colour='#4C4C4C',stroke = 0.25)+
+  scale_fill_manual(values=c("#725663","#D49464","#ADB17D","#5B8FA8","white"))+
+  #scale_fill_nejm()+
+ # scale_fill_manual(values=c("#0073C299","#A7303099","#EFC00099","#3B3B3B99","white"))+
+  scale_alpha_continuous(range = c(1, 0), limits = c(0, 0.23)) +  # 
+  scale_shape_manual(values = c(1, 21))+
+  labs(x = "Individual", y = "Taxa")+          
+ # scale_radius(                               
+ #   range=c(2,6),                             
+  #  name="log(sum)")+                             
+ # scale_size_continuous(range = c(1.5, 5.5))+
+  theme_bw() +                                
+  theme(axis.text.x = element_text(angle = 30,vjust = 0.85,hjust = 0.75))+
+  theme(panel.grid = element_blank())
+
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
