@@ -164,7 +164,7 @@ ggplot(data=all_merge, aes(x=reorder(group,value , FUN = median), y = value,colo
 #  geom_jitter(aes(fill=group),width =0.1,shape = 21,size=2)+
   stat_boxplot(geom = "errorbar",width=0.2)+
   geom_point(aes(color=group),size=0.1) + 
- # geom_line(aes(group = PeopleA), color = 'gray', lwd = 0.3) +  #绘制配对样本间连线
+ # geom_line(aes(group = PeopleA), color = 'gray', lwd = 0.3) +  
  # stat_compare_means(aes(group = type))+
   #scale_color_jco()+
   #scale_fill_npg()+
@@ -176,8 +176,8 @@ ggplot(data=all_merge, aes(x=reorder(group,value , FUN = median), y = value,colo
   theme_bw()+
  # theme(axis.text.x = element_text(angle = 90, hjust = 1))+
    theme(
-  #  axis.line = element_line(colour = "black", size = 1),  # 设置轴线
-    panel.grid.major = element_blank(),  # 隐藏网格线
+  #  axis.line = element_line(colour = "black", size = 1),  
+    panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank()
   )+
   coord_fixed(ratio = 6) +
@@ -282,14 +282,11 @@ df <- df %>% rename_with(~ str_replace_all(., c(
   "210707_09" = "day2_09",
   "210707_13" = "day2_13"
 )))
-# 提取分组标签（列名中第一个下划线后的部分）
 group_tags <- sub("^[^_]+_", "", colnames(df))
-# 按分组标签计算行均值
 result <- sapply(unique(group_tags), function(tag) {
   cols <- which(group_tags == tag)
   rowMeans(df[, cols, drop = FALSE])
 })
-# 转换为数据框
 result_df <- as.data.frame(result)
 
 paint <- result_df[FC_target,]
@@ -618,3 +615,4 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
