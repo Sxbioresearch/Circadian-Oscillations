@@ -17,7 +17,6 @@ OP_S_otu <- read.table("merge_otus.csv",header = T,sep = ",",row.names = 1)
 ###rarefaction
 data = as.data.frame(t(rrarefy(t(OP_S_otu), min(colSums(data2))))) 
 OP_S_relative <- read.table("merge_relative_filter.csv",header = T,sep = ",",row.names = 1,stringsAsFactors = FALSE)
-
 ###alpha diversity
 library(vegan)
 alpha_diversity <- function(x) {
@@ -385,4 +384,5 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
 
