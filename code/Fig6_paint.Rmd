@@ -25,7 +25,7 @@ alpha_diversity <- function(x) {
   Chao1 <- estimateR(x)[2, ]
   ACE <- estimateR(x)[4, ]
   Shannon <- diversity(x, index = 'shannon',base = 2)
-  Simpson <- diversity(x, index = 'simpson')    #注意，这里是Gini-Simpson 指数
+  Simpson <- diversity(x, index = 'simpson')    
   goods_Coverage <- 1 - rowSums(x == 1) / rowSums(x)
   result <- data.frame(observed_species, ACE,Chao1, Shannon, Simpson, goods_Coverage)
   result
@@ -39,7 +39,6 @@ alpha_merge <- merge(alpha,group,by="samples")
 library(dplyr)
 alpha_merge <- alpha_merge %>%
   arrange(type)
-###画图
 library(ggpubr)
 ggboxplot(alpha_merge, x = "group", y = "Shannon", color= "group",add = "jitter", palette = "jama",bxp.errorbar = T,bxp.errorbar.width = 0.2) +
   #stat_compare_means(aes(group = group))+
@@ -361,29 +360,6 @@ upset(fromList(rhythempattern_merge_upset_list_new),
 
 ```
 
-```{r}
-library(UpSetR)
-
-# 创建一个示例数据集
-example_data <- data.frame(
-  A = sample(c(TRUE, FALSE), 100, replace = TRUE),
-  B = sample(c(TRUE, FALSE), 100, replace = TRUE),
-  C = sample(c(TRUE, FALSE), 100, replace = TRUE)
-)
-
-# 使用 UpSetR 创建 UpSet 图
-upset(example_data, sets = c("A", "B", "C"))
-
-# 设置隐藏集合 B
-upset_options(hide_sets = c("B"))
-upset(fromList(example_data), sets = c("A", "B", "C"))
-
-
-upset(fromList(example_data), sets = c("A", set("B", hide = TRUE), "C"))
-
-
-```
-
 
 
 
@@ -409,3 +385,4 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
